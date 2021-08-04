@@ -3,7 +3,7 @@
 	<Title>
 		<v8:item>
 			<v8:lang>ru</v8:lang>
-			<v8:content>Отчет по сч. 97 РБП</v8:content>
+			<v8:content>Отчет: Затраты по ТС</v8:content>
 		</v8:item>
 	</Title>
 	<AutoTitle>false</AutoTitle>
@@ -132,6 +132,11 @@
 					<ContextMenu name="ПолеСуммыКонтекстноеМеню" id="118"/>
 					<ExtendedTooltip name="ПолеСуммыРасширеннаяПодсказка" id="119"/>
 				</InputField>
+				<InputField name="ФильтрТС" id="127">
+					<DataPath>Отчет.ФильтрТС</DataPath>
+					<ContextMenu name="ФильтрТСКонтекстноеМеню" id="128"/>
+					<ExtendedTooltip name="ФильтрТСРасширеннаяПодсказка" id="129"/>
+				</InputField>
 				<InputField name="ПоискСтрока" id="120">
 					<DataPath>ПоискСтрока</DataPath>
 					<Title>
@@ -171,10 +176,6 @@
 					</Picture>
 					<ExtendedTooltip name="ПоискДалееРасширеннаяПодсказка" id="126"/>
 				</Button>
-				<InputField name="ФизЛицо" id="100">
-					<ContextMenu name="ФизЛицоКонтекстноеМеню" id="101"/>
-					<ExtendedTooltip name="ФизЛицоРасширеннаяПодсказка" id="102"/>
-				</InputField>
 			</ChildItems>
 		</UsualGroup>
 		<UsualGroup name="грпНастройка" id="8">
