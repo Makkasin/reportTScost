@@ -271,6 +271,16 @@
 			<dataPath>СуммаТопливо</dataPath>
 			<field>СуммаТопливо</field>
 		</field>
+		<field xsi:type="DataSetFieldField">
+			<dataPath>Регистратор</dataPath>
+			<field>Регистратор</field>
+			<title xsi:type="v8:LocalStringType">
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Регистратор</v8:content>
+				</v8:item>
+			</title>
+		</field>
 		<dataSource>ИсточникДанных1</dataSource>
 		<query>ВЫБРАТЬ
 		уатМестонахождениеТССрезПоследних.ОсновноеСредство ТС,
@@ -333,6 +343,7 @@
 	////////////////////////////////////////////////////
 //Лимиты
 ВЫБРАТЬ
+    CASE WHEN &amp;БезДок=TRUE THEN Неопределено ELSE Регистратор END Регистратор,
 	ЗатратыДляЛимитов.Период КАК Период,
 	ЗатратыДляЛимитов.ОсновноеСредство КАК ОсновноеСредство,
 	ЗатратыДляЛимитов.Номенклатура КАК Номенклатура,
@@ -356,6 +367,7 @@ UNION ALL
 
 ///сч 60
 ВЫБРАТЬ
+    CASE WHEN &amp;БезДок=TRUE THEN Неопределено ELSE Хозрасчетный.Регистратор END Регистратор,
 	Хозрасчетный.Период КАК Период,
 	субОС.Значение  КАК ОС,
 	Хозрасчетный.Содержание КАК Номенклатура,
@@ -394,6 +406,7 @@ WHERE
 и (субОС.Значение = &amp;ФильтрТС или &amp;ФильтрТС = ЗНАЧЕНИЕ(Справочник.ОсновныеСредства.ПустаяССылка) )
 
 GROUP BY  
+    CASE WHEN &amp;БезДок=TRUE THEN Неопределено ELSE Хозрасчетный.Регистратор END,
     Хозрасчетный.Период ,
 	субОС.Значение  ,
 	Хозрасчетный.Содержание,
@@ -406,6 +419,7 @@ UNION ALL
 
 //сч 10 прочие
 ВЫБРАТЬ
+    CASE WHEN &amp;БезДок=TRUE THEN Неопределено ELSE Хозрасчетный.Регистратор END Регистратор,
 	Хозрасчетный.Период КАК Период,
 	субОС.Значение  КАК ОС,
 	субНом.Значение КАК Номенклатура,
@@ -450,6 +464,7 @@ WHERE
 и ЗатратыДляЛимитов.Регистратор IS NULL
 
 GROUP BY
+    CASE WHEN &amp;БезДок=TRUE THEN Неопределено ELSE Хозрасчетный.Регистратор END,
 	Хозрасчетный.Период ,
 	субОС.Значение  ,
 	субНом.Значение ,
@@ -459,6 +474,7 @@ GROUP BY
 
  ;	////////////////////////////////////////////////////
 ВЫБРАТЬ
+    Тбл.Регистратор,
     Тбл.Период Дата,
 	тбПодр.Местонахождение Подразделение,
 	СпрОС.ссылка КАК ОсновноеСредство,
@@ -498,7 +514,7 @@ LEFT OUTER JOIN Справочник.Номенклатура СпрНом ON С
 
 LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.ОсновноеСредство
 
-WHERE &amp;фильтрДорогиеЗЧ = Ложь или СуммаЗЧ/CASE WHEN Количество=0 THEN 1 ELSE Количество END &gt;25000</query>
+WHERE (&amp;фильтрДорогиеЗЧ = Ложь или СуммаЗЧ/CASE WHEN Количество=0 THEN 1 ELSE Количество END &gt;25000)</query>
 	</dataSet>
 	<totalField>
 		<dataPath>Сумма</dataPath>
@@ -697,6 +713,20 @@ WHERE &amp;фильтрДорогиеЗЧ = Ложь или СуммаЗЧ/CASE 
 		<value xsi:type="xs:boolean">false</value>
 		<useRestriction>false</useRestriction>
 	</parameter>
+	<parameter>
+		<name>БезДок</name>
+		<title xsi:type="v8:LocalStringType">
+			<v8:item>
+				<v8:lang>ru</v8:lang>
+				<v8:content>Без док</v8:content>
+			</v8:item>
+		</title>
+		<valueType>
+			<v8:Type>xs:boolean</v8:Type>
+		</valueType>
+		<value xsi:type="xs:boolean">true</value>
+		<useRestriction>false</useRestriction>
+	</parameter>
 	<settingsVariant>
 		<dcsset:name>Основной</dcsset:name>
 		<dcsset:presentation xsi:type="xs:string">Основной</dcsset:presentation>
@@ -794,6 +824,10 @@ WHERE &amp;фильтрДорогиеЗЧ = Ложь или СуммаЗЧ/CASE 
 				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
 					<dcscor:parameter>фильтрДорогиеЗЧ</dcscor:parameter>
 					<dcscor:value xsi:type="xs:boolean">false</dcscor:value>
+				</dcscor:item>
+				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
+					<dcscor:parameter>БезДок</dcscor:parameter>
+					<dcscor:value xsi:type="xs:boolean">true</dcscor:value>
 				</dcscor:item>
 			</dcsset:dataParameters>
 			<dcsset:order>
