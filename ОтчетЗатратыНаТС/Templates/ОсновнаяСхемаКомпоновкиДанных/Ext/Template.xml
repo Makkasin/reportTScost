@@ -27,6 +27,12 @@
 					<v8:content>Возраст техники</v8:content>
 				</v8:item>
 			</title>
+			<appearance>
+				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
+					<dcscor:parameter>МаксимальнаяШирина</dcscor:parameter>
+					<dcscor:value xsi:type="xs:decimal">9</dcscor:value>
+				</dcscor:item>
+			</appearance>
 		</field>
 		<field xsi:type="DataSetFieldField">
 			<dataPath>СтатьяЗатрат</dataPath>
@@ -64,6 +70,10 @@
 							<v8:content>ЧГ=0</v8:content>
 						</v8:item>
 					</dcscor:value>
+				</dcscor:item>
+				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
+					<dcscor:parameter>МаксимальнаяШирина</dcscor:parameter>
+					<dcscor:value xsi:type="xs:decimal">8</dcscor:value>
 				</dcscor:item>
 			</appearance>
 		</field>
@@ -122,7 +132,7 @@
 			<title xsi:type="v8:LocalStringType">
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Основное средство код</v8:content>
+					<v8:content>Гар.№</v8:content>
 				</v8:item>
 			</title>
 		</field>
@@ -132,7 +142,7 @@
 			<title xsi:type="v8:LocalStringType">
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Статья затрат код</v8:content>
+					<v8:content>Код</v8:content>
 				</v8:item>
 			</title>
 		</field>
@@ -142,7 +152,7 @@
 			<title xsi:type="v8:LocalStringType">
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Группа затрат код</v8:content>
+					<v8:content>Код</v8:content>
 				</v8:item>
 			</title>
 		</field>
@@ -226,9 +236,15 @@
 			<title xsi:type="v8:LocalStringType">
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Часы реестра</v8:content>
+					<v8:content>Часы раб.</v8:content>
 				</v8:item>
 			</title>
+			<appearance>
+				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
+					<dcscor:parameter>МаксимальнаяШирина</dcscor:parameter>
+					<dcscor:value xsi:type="xs:decimal">5</dcscor:value>
+				</dcscor:item>
+			</appearance>
 		</field>
 		<field xsi:type="DataSetFieldField">
 			<dataPath>Дата</dataPath>
@@ -250,6 +266,10 @@
 					</dcscor:value>
 				</dcscor:item>
 			</appearance>
+		</field>
+		<field xsi:type="DataSetFieldField">
+			<dataPath>СуммаТопливо</dataPath>
+			<field>СуммаТопливо</field>
 		</field>
 		<dataSource>ИсточникДанных1</dataSource>
 		<query>ВЫБРАТЬ
@@ -311,6 +331,7 @@
 	  GROUP BY  ОсновноеСредство
 	 ;
 	////////////////////////////////////////////////////
+//Лимиты
 ВЫБРАТЬ
 	ЗатратыДляЛимитов.Период КАК Период,
 	ЗатратыДляЛимитов.ОсновноеСредство КАК ОсновноеСредство,
@@ -318,6 +339,7 @@
 	ЗатратыДляЛимитов.СтатьяЗатрат КАК СтатьяЗатрат,
 	ЗатратыДляЛимитов.Количество КАК Количество,
 	ЗатратыДляЛимитов.Сумма КАК СуммаЗЧ,
+	ЗатратыДляЛимитов.СуммаТопливо КАК СуммаТопливо,
 	0 КАК СуммаУсл,
 	ЗатратыДляЛимитов.ДокументОснование КАК Аналитика
 	
@@ -332,6 +354,7 @@ INTO врЗтр
 
 UNION ALL
 
+///сч 60
 ВЫБРАТЬ
 	Хозрасчетный.Период КАК Период,
 	субОС.Значение  КАК ОС,
@@ -339,7 +362,8 @@ UNION ALL
 	субСтз.Значение КАК Стз,
 	Хозрасчетный.КоличествоКт КАК КоличествоКт,
 	0 КАК СуммаЗЧ,
-	Хозрасчетный.Сумма КАК СуммаУсл,
+	0 КАК СуммаТопливо,
+	SUM(Хозрасчетный.Сумма) КАК СуммаУсл,
 	ISNULL(СпрКА.Наименование,"&lt;Не указан контрагент&gt;")  КАК Аналитика
 
 ИЗ
@@ -369,6 +393,70 @@ WHERE
 и Хозрасчетный.Период &lt;  &amp;КонПер
 и (субОС.Значение = &amp;ФильтрТС или &amp;ФильтрТС = ЗНАЧЕНИЕ(Справочник.ОсновныеСредства.ПустаяССылка) )
 
+GROUP BY  
+    Хозрасчетный.Период ,
+	субОС.Значение  ,
+	Хозрасчетный.Содержание,
+	субСтз.Значение,
+	Хозрасчетный.КоличествоКт,
+    ISNULL(СпрКА.Наименование,"&lt;Не указан контрагент&gt;")
+
+UNION ALL
+
+
+//сч 10 прочие
+ВЫБРАТЬ
+	Хозрасчетный.Период КАК Период,
+	субОС.Значение  КАК ОС,
+	субНом.Значение КАК Номенклатура,
+	субСтз.Значение КАК Стз,
+	SUM(Хозрасчетный.КоличествоКт) КАК КоличествоКт,
+	SUM(Хозрасчетный.Сумма) КАК СуммаЗЧ,
+	0 КАК СуммаТопливо,
+	0 КАК СуммаУсл,
+	Хозрасчетный.Регистратор  КАК Аналитика
+
+ИЗ
+	РегистрБухгалтерии.Хозрасчетный КАК Хозрасчетный
+INNER JOIN ПланСчетов.Хозрасчетный ПланСчт                     ON   ПланСчт.ссылка = Хозрасчетный.счетДт и ПланСчт.Код = "22" 
+INNER JOIN РегистрБухгалтерии.Хозрасчетный.Субконто КАК субОС  ON   субОС.номерстроки = Хозрасчетный.номерстроки
+																  и субОС.Регистратор = Хозрасчетный.Регистратор
+																  и субОС.вид 		 = Значение(ПланВидовХарактеристик.ВидыСубконтоХозрасчетные.ОсновныеСредства)
+																  и субОС.видДвижения = Значение(ВидДвиженияБухгалтерии.Дебет)
+																				
+INNER JOIN РегистрБухгалтерии.Хозрасчетный.Субконто КАК субСтз ON   субСтз.номерстроки = Хозрасчетный.номерстроки
+																  и субСтз.Регистратор = Хозрасчетный.Регистратор
+																  и субСтз.вид 		 = Значение(ПланВидовХарактеристик.ВидыСубконтоХозрасчетные.СтатьиЗатрат)
+																  и субСтз.видДвижения = Значение(ВидДвиженияБухгалтерии.Дебет)
+																				
+INNER JOIN РегистрБухгалтерии.Хозрасчетный.Субконто КАК субНом ON   субНом.номерстроки = Хозрасчетный.номерстроки
+																  и субНом.Регистратор = Хозрасчетный.Регистратор
+																  и субНом.вид 		   = Значение(ПланВидовХарактеристик.ВидыСубконтоХозрасчетные.Номенклатура)
+																  и субНом.видДвижения = Значение(ВидДвиженияБухгалтерии.Кредит)
+																  
+
+LEFT OUTER JOIN РегистрНакопления.ЗатратыДляЛимитов КАК ЗатратыДляЛимитов ON
+							 (ЗатратыДляЛимитов.ОсновноеСредство = &amp;ФильтрТС или &amp;ФильтрТС = ЗНАЧЕНИЕ(Справочник.ОсновныеСредства.ПустаяССылка))
+  							и ЗатратыДляЛимитов.Период &gt;= &amp;Начпер
+  							и ЗатратыДляЛимитов.Период &lt;  &amp;КонПер
+							и ЗатратыДляЛимитов.Регистратор = Хозрасчетный.Регистратор 													
+																				
+WHERE 
+
+  Хозрасчетный.счетКт в ИЕРАРХИИ (Значение(ПланСчетов.Хозрасчетный.Материалы))
+и Хозрасчетный.Период &gt;= &amp;Начпер
+и Хозрасчетный.Период &lt;  &amp;КонПер
+и (субОС.Значение = &amp;ФильтрТС или &amp;ФильтрТС = ЗНАЧЕНИЕ(Справочник.ОсновныеСредства.ПустаяССылка) )
+и ЗатратыДляЛимитов.Регистратор IS NULL
+
+GROUP BY
+	Хозрасчетный.Период ,
+	субОС.Значение  ,
+	субНом.Значение ,
+	субСтз.Значение ,
+    Хозрасчетный.Регистратор
+
+
  ;	////////////////////////////////////////////////////
 ВЫБРАТЬ
     Тбл.Период Дата,
@@ -384,8 +472,9 @@ WHERE
 	Тбл.Номенклатура КАК Номенклатура,
 	СпрНом.Код КАК КодНом,
 	Тбл.Аналитика КАК Аналитика,
-	ТБл.СуммаЗЧ+СуммаУсл КАК Сумма,
+	ТБл.СуммаЗЧ+СуммаУсл+СуммаТопливо КАК Сумма,
 	ТБл.СуммаЗЧ КАК СуммаЗЧ,
+	ТБл.СуммаТопливо КАК СуммаТопливо,
 	ТБл.СуммаУсл КАК СуммаУсл,
 	Тбл.Количество КАК Количество,
 	тбЧасы.Часы,
@@ -407,7 +496,9 @@ LEFT OUTER JOIN Справочник.СтатьиЗатрат СпрСтзГрп
 
 LEFT OUTER JOIN Справочник.Номенклатура СпрНом ON СпрНом.ссылка = Тбл.Номенклатура
 
-LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.ОсновноеСредство</query>
+LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.ОсновноеСредство
+
+WHERE &amp;фильтрДорогиеЗЧ = Ложь или СуммаЗЧ/CASE WHEN Количество=0 THEN 1 ELSE Количество END &gt;25000</query>
 	</dataSet>
 	<totalField>
 		<dataPath>Сумма</dataPath>
@@ -424,6 +515,10 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 	<totalField>
 		<dataPath>СуммаУсл</dataPath>
 		<expression>Сумма(СуммаУсл)</expression>
+	</totalField>
+	<totalField>
+		<dataPath>СуммаТопливо</dataPath>
+		<expression>Сумма(СуммаТопливо)</expression>
 	</totalField>
 	<parameter>
 		<name>Период</name>
@@ -588,6 +683,20 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 		<value xsi:nil="true"/>
 		<useRestriction>false</useRestriction>
 	</parameter>
+	<parameter>
+		<name>фильтрДорогиеЗЧ</name>
+		<title xsi:type="v8:LocalStringType">
+			<v8:item>
+				<v8:lang>ru</v8:lang>
+				<v8:content>Фильтр дорогие ЗЧ</v8:content>
+			</v8:item>
+		</title>
+		<valueType>
+			<v8:Type>xs:boolean</v8:Type>
+		</valueType>
+		<value xsi:type="xs:boolean">false</value>
+		<useRestriction>false</useRestriction>
+	</parameter>
 	<settingsVariant>
 		<dcsset:name>Основной</dcsset:name>
 		<dcsset:presentation xsi:type="xs:string">Основной</dcsset:presentation>
@@ -631,6 +740,7 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 					<dcsset:field>Аналитика</dcsset:field>
 				</dcsset:item>
 				<dcsset:item xsi:type="dcsset:SelectedItemField">
+					<dcsset:use>false</dcsset:use>
 					<dcsset:field>Количество</dcsset:field>
 				</dcsset:item>
 				<dcsset:item xsi:type="dcsset:SelectedItemField">
@@ -638,6 +748,10 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 				</dcsset:item>
 				<dcsset:item xsi:type="dcsset:SelectedItemField">
 					<dcsset:field>СуммаУсл</dcsset:field>
+				</dcsset:item>
+				<dcsset:item xsi:type="dcsset:SelectedItemField">
+					<dcsset:use>false</dcsset:use>
+					<dcsset:field>СуммаТопливо</dcsset:field>
 				</dcsset:item>
 				<dcsset:item xsi:type="dcsset:SelectedItemField">
 					<dcsset:use>false</dcsset:use>
@@ -677,6 +791,10 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 					<dcscor:parameter>ФильтрТС</dcscor:parameter>
 					<dcscor:value xsi:type="dcscor:Field"/>
 				</dcscor:item>
+				<dcscor:item xsi:type="dcsset:SettingsParameterValue">
+					<dcscor:parameter>фильтрДорогиеЗЧ</dcscor:parameter>
+					<dcscor:value xsi:type="xs:boolean">false</dcscor:value>
+				</dcscor:item>
 			</dcsset:dataParameters>
 			<dcsset:order>
 				<dcsset:item xsi:type="dcsset:OrderItemField">
@@ -713,6 +831,7 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 				</dcscor:item>
 			</dcsset:outputParameters>
 			<dcsset:item xsi:type="dcsset:StructureItemGroup">
+				<dcsset:use>false</dcsset:use>
 				<dcsset:groupItems>
 					<dcsset:item xsi:type="dcsset:GroupItemField">
 						<dcsset:field>Подразделение</dcsset:field>
@@ -729,6 +848,7 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 					<dcsset:item xsi:type="dcsset:SelectedItemAuto"/>
 				</dcsset:selection>
 				<dcsset:item xsi:type="dcsset:StructureItemGroup">
+					<dcsset:use>false</dcsset:use>
 					<dcsset:groupItems>
 						<dcsset:item xsi:type="dcsset:GroupItemField">
 							<dcsset:field>ВозрастТехники</dcsset:field>
@@ -745,6 +865,7 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 						<dcsset:item xsi:type="dcsset:SelectedItemAuto"/>
 					</dcsset:selection>
 					<dcsset:item xsi:type="dcsset:StructureItemGroup">
+						<dcsset:use>false</dcsset:use>
 						<dcsset:groupItems>
 							<dcsset:item xsi:type="dcsset:GroupItemField">
 								<dcsset:field>Модель</dcsset:field>
@@ -806,6 +927,7 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 								<dcsset:item xsi:type="dcsset:SelectedItemAuto"/>
 							</dcsset:selection>
 							<dcsset:item xsi:type="dcsset:StructureItemGroup">
+								<dcsset:use>false</dcsset:use>
 								<dcsset:groupItems>
 									<dcsset:item xsi:type="dcsset:GroupItemField">
 										<dcsset:field>ГруппаЗатрат</dcsset:field>
@@ -822,6 +944,7 @@ LEFT OUTER JOIN врЧасы тбЧасы ON тбЧасы.ОС = ТБл.Осно
 									<dcsset:item xsi:type="dcsset:SelectedItemAuto"/>
 								</dcsset:selection>
 								<dcsset:item xsi:type="dcsset:StructureItemGroup">
+									<dcsset:use>false</dcsset:use>
 									<dcsset:groupItems>
 										<dcsset:item xsi:type="dcsset:GroupItemField">
 											<dcsset:field>СтатьяЗатратКод</dcsset:field>

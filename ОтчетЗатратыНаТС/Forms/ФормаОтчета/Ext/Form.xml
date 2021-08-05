@@ -3,7 +3,7 @@
 	<Title>
 		<v8:item>
 			<v8:lang>ru</v8:lang>
-			<v8:content>Отчет: Затраты по ТС</v8:content>
+			<v8:content>Отчет: Затраты на ТС</v8:content>
 		</v8:item>
 	</Title>
 	<AutoTitle>false</AutoTitle>
@@ -44,6 +44,11 @@
 					<BackColor>web:NavajoWhite</BackColor>
 					<Font bold="true" kind="AutoFont"/>
 					<ExtendedTooltip name="СформироватьРасширеннаяПодсказка" id="94"/>
+				</Button>
+				<Button name="Сформировать1" id="130">
+					<Type>UsualButton</Type>
+					<CommandName>Form.Command.сфДорогие</CommandName>
+					<ExtendedTooltip name="Сформировать1РасширеннаяПодсказка" id="131"/>
 				</Button>
 				<InputField name="Дт" id="83">
 					<DataPath>Отчет.Дт</DataPath>
@@ -673,6 +678,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПоискНазад</Action>
+		</Command>
+		<Command name="сфДорогие" id="6">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Дорогие З/ч</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Сформировать</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>Сформировать</Action>
 		</Command>
 	</Commands>
 </Form>
